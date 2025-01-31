@@ -6,6 +6,19 @@ from xgboost import XGBRegressor
 from tensorflow.keras.models import load_model
 import numpy as np
 
+import requests
+
+# URL to the raw model file on GitHub
+url = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/blob/main/lstm_model.h5'
+
+# Download the file
+response = requests.get(url)
+with open('lstm_model.h5', 'wb') as f:
+    f.write(response.content)
+
+
+
+
 # Load your pre-trained models
 lstm_model = load_model('lstm_model.h5')
 xgboost_model = XGBRegressor()
