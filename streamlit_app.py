@@ -27,7 +27,7 @@ xgboost_model.load_model('xgboost_model.json')
 # Load the sales data
 @st.cache
 def load_data():
-    return pd.read_csv('sales_data5.csv')
+    return pd.read_csv('sales_data.csv')
 
 data = load_data()
 
