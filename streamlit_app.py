@@ -3,26 +3,27 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from xgboost import XGBRegressor
-from tensorflow.keras.models import load_model
+import tensorflow as tf
 import numpy as np
-
 import requests
 
-# URL to the raw model file on GitHub
-url = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/blob/main/lstm_model.h5'
-
-# Download the file
-response = requests.get(url)
+# Download the model from GitHub
+url1 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/blob/main/lstm_model.h5'
+response = requests.get(url1)
 with open('lstm_model.h5', 'wb') as f:
     f.write(response.content)
 
+# Download the model from GitHub
+url2 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/blob/main/xgboost_model.json'
+response = requests.get(url2)
+with open('xgboost_model.json', 'wb') as f:
+    f.write(response.content)
 
-
-
-# Load your pre-trained models
-lstm_model = load_model('lstm_model.h5')
-xgboost_model = XGBRegressor()
-xgboost_model.load_model('xgboost_model.json')
+# Download the model from GitHub
+url3 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/blob/main/data/sales_data.csv'
+response = requests.get(url3)
+with open('sales_data.csv', 'wb') as f:
+    f.write(response.content)
 
 # Load the sales data
 @st.cache
@@ -30,6 +31,11 @@ def load_data():
     return pd.read_csv('sales_data.csv')
 
 data = load_data()
+
+# Load your pre-trained models
+lstm_model = tf.models.load_model('lstm_model.h5')
+xgboost_model = XGBRegressor()
+xgboost_model.load_model('xgboost_model.json')
 
 # Convert date column to datetime
 data['date'] = pd.to_datetime(data['date'])
