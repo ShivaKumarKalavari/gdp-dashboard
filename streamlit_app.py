@@ -78,11 +78,21 @@ st.sidebar.header('Sales Prediction')
 prediction_date = st.sidebar.date_input('Select Date for Prediction')
 
 if st.sidebar.button('Predict Sales'):
+    """
     # Prepare data for prediction
     def preprocess_data_for_prediction(data, prediction_date):
         # Example: Extract year, month, and day from the prediction date
         processed_data = np.array([[prediction_date.year, prediction_date.month, prediction_date.day]])
         return processed_data
+    """
+    def preprocess_data_for_prediction(data, prediction_date):
+    # Get the last 10 days of sales data as input
+    past_data = data.tail(10)[['product_sales_quantity', 'price', 'marketing_effect']].values
+    
+    # Reshape to match LSTM input shape (batch_size, timesteps, features)
+    processed_data = past_data.reshape(1, 10, 3)  # 1 sample, 10 timesteps, 3 features
+    return processed_data
+
 
     processed_data = preprocess_data_for_prediction(filtered_data, prediction_date)
 
