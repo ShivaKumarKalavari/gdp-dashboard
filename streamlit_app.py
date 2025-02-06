@@ -6,6 +6,8 @@ from xgboost import XGBRegressor
 import tensorflow as tf
 import numpy as np
 import requests
+import sklearn
+from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 # Download the LSTM model from GitHub
 url1 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/raw/main/lstm_model.h5'
