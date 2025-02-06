@@ -14,7 +14,12 @@ with open('lstm_model.h5', 'wb') as f:
     f.write(response.content)
 
 # Load the LSTM model
-lstm_model = tf.keras.models.load_model('lstm_model.h5')
+try:
+    lstm_model = tf.keras.models.load_model('lstm_model.h5')
+    lstm_model.compile(optimizer='adam', loss='mse') 
+except Exception as e:
+    st.error(f"Error loading LSTM model: {e}")
+    st.stop()
 
 # Download the XGBoost model from GitHub
 url2 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/raw/main/xgboost_model.json'
