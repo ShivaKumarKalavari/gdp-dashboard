@@ -7,6 +7,7 @@ import tensorflow as tf
 import numpy as np
 import requests
 
+"""
 # Download the model from GitHub
 url1 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/blob/main/lstm_model.h5'
 response = requests.get(url1)
@@ -25,10 +26,12 @@ response = requests.get(url3)
 with open('sales_data.csv', 'wb') as f:
     f.write(response.content)
 
+"""
+
 # Load the sales data
 @st.cache
 def load_data():
-    return pd.read_csv('sales_data.csv')
+    return pd.read_csv('data/sales_data.csv')
 
 data = load_data()
 
