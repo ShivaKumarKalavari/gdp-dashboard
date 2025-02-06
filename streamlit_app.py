@@ -95,7 +95,7 @@ if st.sidebar.button('Predict Sales'):
         past_data['weekday'] = past_data['date'].dt.weekday
         
         # Reshape to match LSTM input shape (batch_size, timesteps, features)
-        processed_data = past_data.reshape(1, 10, 3)  # 1 sample, 10 timesteps, 3 features
+        processed_data = past_data.reshape(1, 10, 5)  # 1 sample, 10 timesteps, 3 features
         return processed_data
 
 
