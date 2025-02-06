@@ -8,4 +8,4 @@ gdown
 requests
 numpy
 h5py
-sklearn
+sklearn==1.3.1
