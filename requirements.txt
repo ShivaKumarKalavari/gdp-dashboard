@@ -8,3 +8,4 @@ gdown
 requests
 numpy
 h5py
+sklearn
