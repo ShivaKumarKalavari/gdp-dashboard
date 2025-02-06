@@ -87,7 +87,12 @@ if st.sidebar.button('Predict Sales'):
     """
     def preprocess_data_for_prediction(data, prediction_date):
         # Get the last 10 days of sales data as input
-        past_data = data.tail(10)[['product_sales_quantity', 'price', 'marketing_effect']].values
+        past_data = data.tail(10)[['product_sales_quantity', 'product_price', 'date']].values
+        # Feature Engineering
+        past_data['year'] = past_data['date'].dt.year
+        past_data['month'] = past_data['date'].dt.month
+        past_data['day'] = past_data['date'].dt.day
+        past_data['weekday'] = past_data['date'].dt.weekday
         
         # Reshape to match LSTM input shape (batch_size, timesteps, features)
         processed_data = past_data.reshape(1, 10, 3)  # 1 sample, 10 timesteps, 3 features
