@@ -7,33 +7,33 @@ import tensorflow as tf
 import numpy as np
 import requests
 
-# Download the model from GitHub
-url1 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/blob/main/lstm_model.h5'
+# Download the LSTM model from GitHub
+url1 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/raw/main/lstm_model.h5'
 response = requests.get(url1)
 with open('lstm_model.h5', 'wb') as f:
     f.write(response.content)
 
-lstm_model = tf.models.load_model('lstm_model.h5')
+# Load the LSTM model
+lstm_model = tf.keras.models.load_model('lstm_model.h5')
 
-# Download the model from GitHub
-url2 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/blob/main/xgboost_model.json'
+# Download the XGBoost model from GitHub
+url2 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/raw/main/xgboost_model.json'
 response = requests.get(url2)
 with open('xgboost_model.json', 'wb') as f:
     f.write(response.content)
 
-
+# Load the XGBoost model
 xgboost_model = XGBRegressor()
 xgboost_model.load_model('xgboost_model.json')
 
-# Download the model from GitHub
-url3 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/blob/main/data/sales_data.csv'
+# Download the sales data from GitHub
+url3 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/raw/main/data/sales_data.csv'
 response = requests.get(url3)
 with open('sales_data.csv', 'wb') as f:
     f.write(response.content)
 
+# Load the sales data
 data = pd.read_csv('sales_data.csv')
-
-# Load your pre-trained model
 
 # Convert date column to datetime
 data['date'] = pd.to_datetime(data['date'])
@@ -72,10 +72,9 @@ prediction_date = st.sidebar.date_input('Select Date for Prediction')
 
 if st.sidebar.button('Predict Sales'):
     # Prepare data for prediction
-    # Assuming you have a function to preprocess the data for the models
     def preprocess_data_for_prediction(data, prediction_date):
-        # Add your preprocessing steps here
-        # For example, feature engineering, scaling, etc.
+        # Example: Extract year, month, and day from the prediction date
+        processed_data = np.array([[prediction_date.year, prediction_date.month, prediction_date.day]])
         return processed_data
 
     processed_data = preprocess_data_for_prediction(filtered_data, prediction_date)
