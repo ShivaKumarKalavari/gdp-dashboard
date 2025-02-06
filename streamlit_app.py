@@ -7,12 +7,13 @@ import tensorflow as tf
 import numpy as np
 import requests
 
-"""
 # Download the model from GitHub
 url1 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/blob/main/lstm_model.h5'
 response = requests.get(url1)
 with open('lstm_model.h5', 'wb') as f:
     f.write(response.content)
+
+lstm_model = tf.models.load_model('lstm_model.h5')
 
 # Download the model from GitHub
 url2 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/blob/main/xgboost_model.json'
@@ -20,25 +21,19 @@ response = requests.get(url2)
 with open('xgboost_model.json', 'wb') as f:
     f.write(response.content)
 
+
+xgboost_model = XGBRegressor()
+xgboost_model.load_model('xgboost_model.json')
+
 # Download the model from GitHub
 url3 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/blob/main/data/sales_data.csv'
 response = requests.get(url3)
 with open('sales_data.csv', 'wb') as f:
     f.write(response.content)
 
-"""
+data = pd.read_csv('sales_data.csv')
 
-# Load the sales data
-@st.cache
-def load_data():
-    return pd.read_csv('data/sales_data.csv')
-
-data = load_data()
-
-# Load your pre-trained models
-lstm_model = tf.models.load_model('lstm_model.h5')
-xgboost_model = XGBRegressor()
-xgboost_model.load_model('xgboost_model.json')
+# Load your pre-trained model
 
 # Convert date column to datetime
 data['date'] = pd.to_datetime(data['date'])
