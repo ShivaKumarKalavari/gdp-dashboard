@@ -16,7 +16,7 @@ with open('lstm_model.h5', 'wb') as f:
 # Load the LSTM model
 try:
     lstm_model = tf.keras.models.load_model('lstm_model.h5')
-    lstm_model.compile(optimizer='adam', loss='mse') 
+    #lstm_model.compile(optimizer='adam', loss='mse') 
 except Exception as e:
     st.error(f"Error loading LSTM model: {e}")
     st.stop()
