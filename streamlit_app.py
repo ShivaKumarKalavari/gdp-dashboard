@@ -83,17 +83,30 @@ category_encoded = label_enc_category.transform([selected_category])[0]
 location_encoded = label_enc_location.transform([selected_location])[0]
 
 # Prepare input for LSTM
-previous_sales = data[(data['product_category'] == selected_category) & 
-                      (data['warehouse_location'] == selected_location)].tail(10)['product_sales_quantity'].values
-if len(previous_sales) < 10:
-    previous_sales = np.pad(previous_sales, (10 - len(previous_sales), 0), 'constant')
+# Ensure we have at least 6 months of historical data
+required_data = data[
+    (data['product_category'] == selected_category) & 
+    (data['warehouse_location'] == selected_location) &
+    (data['year'] == selected_year)
+]
 
-input_features = np.array([[category_encoded, location_encoded, selected_month, selected_year] + list(previous_sales)])
-input_features = np.reshape(input_features, (1, 1, input_features.shape[1]))
+# Sort data by date and select the last 6 months
+required_data = required_data.sort_values(by=['year', 'month']).tail(6)
 
-# Predict sales
-if st.sidebar.button('Predict Sales'):
-    prediction = lstm_model.predict(input_features)
-    predicted_sales = scaler.inverse_transform(prediction.reshape(-1, 1))[0][0]
-    st.write(f'Predicted Sales Quantity for {selected_month}/{selected_year}: {predicted_sales:.2f}')
+if len(required_data) < 6:
+    st.error("Not enough historical data (at least 6 months required).")
+else:
+    # Prepare input features
+    input_features = required_data[['product_category_encoded', 'warehouse_location_encoded', 'month', 'year']].values
+    
+    # Reshape to (batch_size=1, time_steps=6, features=4)
+    input_features = np.reshape(input_features, (1, 6, 4))
 
+    # Predict sales
+    if st.sidebar.button('Predict Sales'):
+        try:
+            prediction = lstm_model.predict(input_features)
+            predicted_sales = scaler.inverse_transform(prediction.reshape(-1, 1))[0][0]
+            st.write(f'Predicted Sales Quantity for {selected_month}/{selected_year}: {predicted_sales:.2f}')
+        except Exception as e:
+            st.error(f"Prediction Error: {e}")
