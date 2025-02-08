@@ -8,9 +8,9 @@ import requests
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 
 # Download the LSTM model from GitHub
-url1 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/raw/main/m_model.keras'
+url1 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/raw/main/model_1.keras'
 response = requests.get(url1)
-with open('m_model.keras', 'wb') as f:
+with open('model_1.keras', 'wb') as f:
     f.write(response.content)
 
 # Load the trained LSTM model
