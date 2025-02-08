@@ -83,7 +83,12 @@ category_encoded = label_enc_category.transform([selected_category])[0]
 location_encoded = label_enc_location.transform([selected_location])[0]
 
 # Prepare input for LSTM
-input_features = np.array([[category_encoded, location_encoded, selected_month, selected_year]])
+previous_sales = data[(data['product_category'] == selected_category) & 
+                      (data['warehouse_location'] == selected_location)].tail(10)['product_sales_quantity'].values
+if len(previous_sales) < 10:
+    previous_sales = np.pad(previous_sales, (10 - len(previous_sales), 0), 'constant')
+
+input_features = np.array([[category_encoded, location_encoded, selected_month, selected_year] + list(previous_sales)])
 input_features = np.reshape(input_features, (1, 1, input_features.shape[1]))
 
 # Predict sales
@@ -91,3 +96,4 @@ if st.sidebar.button('Predict Sales'):
     prediction = lstm_model.predict(input_features)
     predicted_sales = scaler.inverse_transform(prediction.reshape(-1, 1))[0][0]
     st.write(f'Predicted Sales Quantity for {selected_month}/{selected_year}: {predicted_sales:.2f}')
+
