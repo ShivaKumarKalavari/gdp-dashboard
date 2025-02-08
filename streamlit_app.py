@@ -19,15 +19,14 @@ lstm_model = tf.keras.models.load_model(model_path)
 
 
 # Download the sales data from GitHub
-url2 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/raw/main/data/sales_data.csv'
+url2 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/raw/main/data/sales_data_new.csv'
 response = requests.get(url2)
-with open('sales_data.csv', 'wb') as f:
+with open('sales_data_new.csv', 'wb') as f:
     f.write(response.content)
 
 # Load sales data
-sales_data_path = 'sales_data.csv'  # Update with the correct data path
+sales_data_path = 'sales_data_new.csv'  # Update with the correct data path
 data = pd.read_csv(sales_data_path)
-data['date'] = pd.to_datetime(data['date'])
 
 # Sidebar for user inputs
 st.sidebar.header('Filter Options')
@@ -37,14 +36,17 @@ selected_product = st.sidebar.selectbox('Select Product', product_names)
 locations = data['warehouse_location'].unique()
 selected_location = st.sidebar.selectbox('Select Location', locations)
 
-date_range = st.sidebar.date_input('Select Date Range', [data['date'].min(), data['date'].max()])
+# Sidebar selection for year and month range
+st.sidebar.header('Filter Options')
+selected_year_range = st.sidebar.slider('Select Year Range', int(data['year'].min()), int(data['year'].max()), (int(data['year'].min()), int(data['year'].max())))
+selected_month_range = st.sidebar.slider('Select Month Range', 1, 12, (1, 12))
 
 # Filter data based on user selection
 filtered_data = data[
     (data['product_name'] == selected_product) &
     (data['warehouse_location'] == selected_location) &
-    (data['date'] >= pd.to_datetime(date_range[0])) &
-    (data['date'] <= pd.to_datetime(date_range[1]))
+    (data['year'] >= selected_year_range[0]) & (data['year'] <= selected_year_range[1]) &
+    (data['month'] >= selected_month_range[0]) & (data['month'] <= selected_month_range[1])
 ]
 
 # Display filtered data
@@ -54,12 +56,9 @@ st.write(filtered_data)
 # Plot sales data
 st.write('Sales Chart')
 fig, ax = plt.subplots()
-sns.lineplot(x='date', y='product_sales_quantity', data=filtered_data, ax=ax)
+sns.lineplot(x='month', y='product_sales_quantity', hue='year', data=filtered_data, ax=ax)
 st.pyplot(fig)
 
-
-data['year'] = data['date'].dt.year
-data['month'] = data['date'].dt.month
 
 # Encode categorical features
 label_enc_category = LabelEncoder()
