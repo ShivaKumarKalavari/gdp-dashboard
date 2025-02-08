@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 import tensorflow as tf
 import requests
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
@@ -56,10 +57,6 @@ sns.lineplot(x='date', y='product_sales_quantity', data=filtered_data, ax=ax)
 st.pyplot(fig)
 
 
-# Load sales data
-sales_data_path = 'sales_data.csv'  # Update with the correct data path
-data = pd.read_csv(sales_data_path)
-data['date'] = pd.to_datetime(data['date'])
 data['year'] = data['date'].dt.year
 data['month'] = data['date'].dt.month
 
