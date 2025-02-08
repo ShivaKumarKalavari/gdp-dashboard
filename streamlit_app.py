@@ -14,7 +14,7 @@ with open('model_1.keras', 'wb') as f:
     f.write(response.content)
 
 # Load the trained LSTM model
-model_path = 'm_model.keras'  # Update with the correct model path
+model_path = 'model_1.keras'  # Update with the correct model path
 lstm_model = tf.keras.models.load_model(model_path)
 
 
