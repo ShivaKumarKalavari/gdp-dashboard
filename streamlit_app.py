@@ -1,48 +1,29 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-from xgboost import XGBRegressor
-import tensorflow as tf
 import numpy as np
-import requests
-import sklearn
-from sklearn.metrics import mean_absolute_error, mean_squared_error
+import tensorflow as tf
+from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 
 # Download the LSTM model from GitHub
-url1 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/raw/main/lstm_model.h5'
+url1 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/raw/main/m_model.keras'
 response = requests.get(url1)
-with open('lstm_model.h5', 'wb') as f:
+with open('m_model.keras', 'wb') as f:
     f.write(response.content)
 
-# Load the LSTM model
-try:
-    lstm_model = tf.keras.models.load_model('lstm_model.h5', compile=False)  # Load without compiling first
-    lstm_model.compile(optimizer='adam', loss=tf.keras.losses.MeanSquaredError()) 
-except Exception as e:
-    st.error(f"Error loading LSTM model: {e}")
-    st.stop()
+# Load the trained LSTM model
+model_path = 'm_model.keras'  # Update with the correct model path
+lstm_model = tf.keras.models.load_model(model_path)
 
-# Download the XGBoost model from GitHub
-url2 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/raw/main/xgboost_model.json'
-response = requests.get(url2)
-with open('xgboost_model.json', 'wb') as f:
-    f.write(response.content)
-
-# Load the XGBoost model
-xgboost_model = XGBRegressor()
-xgboost_model.load_model('xgboost_model.json')
 
 # Download the sales data from GitHub
-url3 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/raw/main/data/sales_data.csv'
-response = requests.get(url3)
+url2 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/raw/main/data/sales_data.csv'
+response = requests.get(url2)
 with open('sales_data.csv', 'wb') as f:
     f.write(response.content)
 
-# Load the sales data
-data = pd.read_csv('sales_data.csv')
-
-# Convert date column to datetime
+# Load sales data
+sales_data_path = 'sales_data.csv'  # Update with the correct data path
+data = pd.read_csv(sales_data_path)
 data['date'] = pd.to_datetime(data['date'])
 
 # Sidebar for user inputs
@@ -73,40 +54,37 @@ fig, ax = plt.subplots()
 sns.lineplot(x='date', y='product_sales_quantity', data=filtered_data, ax=ax)
 st.pyplot(fig)
 
-# Sales prediction
-st.sidebar.header('Sales Prediction')
-prediction_date = st.sidebar.date_input('Select Date for Prediction')
 
+data['year'] = data['date'].dt.year
+data['month'] = data['date'].dt.month
+
+# Encode categorical features
+label_enc_category = LabelEncoder()
+label_enc_location = LabelEncoder()
+data['product_category_encoded'] = label_enc_category.fit_transform(data['product_category'])
+data['warehouse_location_encoded'] = label_enc_location.fit_transform(data['warehouse_location'])
+
+# Normalize sales quantity
+scaler = MinMaxScaler()
+data['product_sales_quantity'] = scaler.fit_transform(data[['product_sales_quantity']])
+
+# Sidebar inputs
+st.sidebar.header('Predict Sales')
+selected_year = st.sidebar.selectbox('Select Year', sorted(data['year'].unique()))
+selected_month = st.sidebar.selectbox('Select Month', sorted(data['month'].unique()))
+selected_category = st.sidebar.selectbox('Select Product Category', data['product_category'].unique())
+selected_location = st.sidebar.selectbox('Select Warehouse Location', data['warehouse_location'].unique())
+
+# Encode user inputs
+category_encoded = label_enc_category.transform([selected_category])[0]
+location_encoded = label_enc_location.transform([selected_location])[0]
+
+# Prepare input for LSTM
+input_features = np.array([[category_encoded, location_encoded, selected_month, selected_year]])
+input_features = np.reshape(input_features, (1, 1, input_features.shape[1]))
+
+# Predict sales
 if st.sidebar.button('Predict Sales'):
-    """
-    # Prepare data for prediction
-    def preprocess_data_for_prediction(data, prediction_date):
-        # Example: Extract year, month, and day from the prediction date
-        processed_data = np.array([[prediction_date.year, prediction_date.month, prediction_date.day]])
-        return processed_data
-    """
-    def preprocess_data_for_prediction(data, prediction_date):
-        # Get the last 10 days of sales data as input
-        past_data = data.tail(10)[['product_sales_quantity', 'product_price', 'date']].values
-        # Feature Engineering
-        past_data['year'] = past_data['date'].dt.year
-        past_data['month'] = past_data['date'].dt.month
-        past_data['day'] = past_data['date'].dt.day
-        past_data['weekday'] = past_data['date'].dt.weekday
-        
-        # Reshape to match LSTM input shape (batch_size, timesteps, features)
-        processed_data = past_data.reshape(1, 10, 5)  # 1 sample, 10 timesteps, 3 features
-        return processed_data
-
-
-    processed_data = preprocess_data_for_prediction(filtered_data, prediction_date)
-
-    # Predict using LSTM
-    lstm_prediction = lstm_model.predict(processed_data)
-
-    # Predict using XGBoost
-    xgboost_prediction = xgboost_model.predict(processed_data)
-
-    # Display predictions
-    st.write(f'LSTM Prediction for {prediction_date}: {lstm_prediction[0]}')
-    st.write(f'XGBoost Prediction for {prediction_date}: {xgboost_prediction[0]}')
+    prediction = lstm_model.predict(input_features)
+    predicted_sales = scaler.inverse_transform(prediction.reshape(-1, 1))[0][0]
+    st.write(f'Predicted Sales Quantity for {selected_month}/{selected_year}: {predicted_sales:.2f}')
