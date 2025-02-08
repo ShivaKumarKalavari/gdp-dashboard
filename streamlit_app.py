@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import tensorflow as tf
+import requests
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 
 # Download the LSTM model from GitHub
