@@ -56,7 +56,7 @@ sns.lineplot(x='month', y='product_sales_quantity', hue='year', data=data_filter
 st.pyplot(fig)
 
 # Load trained XGBoost model
-model_url = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/raw/main/model_xgboost.json'
+model_url = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/raw/main/xgboost_model.json'
 xgb_model = xgb.XGBRegressor()
 xgb_model.load_model(model_url)
 
