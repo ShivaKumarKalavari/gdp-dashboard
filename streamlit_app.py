@@ -47,6 +47,11 @@ df_grouped.fillna(0, inplace=True)
 
 # One-hot encode categorical variables
 df_grouped = pd.get_dummies(df_grouped, columns=['product_category', 'warehouse_location'], drop_first=False)
+
+
+# Define features and target
+X = df_grouped.drop(columns=['date', 'product_sales_quantity'])
+y = df_grouped['product_sales_quantity']
 ###################
 
 data = data.drop(columns=['date'])
