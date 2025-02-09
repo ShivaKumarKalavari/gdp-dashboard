@@ -9,8 +9,11 @@ from sklearn.preprocessing import MinMaxScaler, LabelEncoder
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 # Load sales data
-url = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/raw/main/data/sales_data_new.csv'
-data = pd.read_csv(url)
+url1 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/raw/main/data/sales_data_new.csv'
+response = requests.get(url1)
+with open('sales_data_new.csv', 'wb') as f:
+    f.write(response.content)
+data = pd.read_csv('sales_data_new.csv')
 
 # Convert date
 data['date'] = pd.to_datetime(data[['year', 'month']].assign(day=1))
@@ -56,7 +59,12 @@ sns.lineplot(x='month', y='product_sales_quantity', hue='year', data=data_filter
 st.pyplot(fig)
 
 # Load trained XGBoost model
-model_url = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/raw/main/xgboost_model.json'
+url2 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/raw/main/xgboost_model.json'
+response = requests.get(url2)
+with open('xgboost_model.json', 'wb') as f:
+    f.write(response.content)
+    
+model_url = 'xgboost_model.json'
 xgb_model = xgb.XGBRegressor()
 xgb_model.load_model(model_url)
 
