@@ -21,24 +21,35 @@ data = pd.read_csv(path)
 
 # Convert date
 data['date'] = pd.to_datetime(data[['year', 'month']].assign(day=1))
+#################
+# Create complete grid of dates, categories, and warehouses
+all_dates = pd.date_range(start=data['date'].min(), end=data['date'].max(), freq='MS')
+categories = data['product_category'].unique()
+warehouses = data['warehouse_location'].unique()
+index = pd.MultiIndex.from_product([all_dates, categories, warehouses], names=['date', 'product_category', 'warehouse_location'])
+df_grouped = data.groupby(['date', 'product_category', 'warehouse_location'])['product_sales_quantity'].sum().reindex(index, fill_value=0).reset_index()
 
 # Feature Engineering
+df_grouped.sort_values(['product_category', 'warehouse_location', 'date'], inplace=True)
 for lag in [1, 2, 3]:
-    data[f'lag_{lag}'] = data.groupby(['product_category', 'warehouse_location'])['product_sales_quantity'].shift(lag)
+    df_grouped[f'lag_{lag}'] = df_grouped.groupby(['product_category', 'warehouse_location'])['product_sales_quantity'].shift(lag)
 
-data['month_sin'] = np.sin(2 * np.pi * data['month'] / 12)
-data['month_cos'] = np.cos(2 * np.pi * data['month'] / 12)
-data.fillna(0, inplace=True)
+window_sizes = [3, 6]
+for window in window_sizes:
+    df_grouped[f'rolling_mean_{window}'] = df_grouped.groupby(['product_category', 'warehouse_location'])['product_sales_quantity'].transform(lambda x: x.rolling(window, min_periods=1).mean())
+    df_grouped[f'rolling_std_{window}'] = df_grouped.groupby(['product_category', 'warehouse_location'])['product_sales_quantity'].transform(lambda x: x.rolling(window, min_periods=1).std())
 
-# One-hot encoding
-label_enc_category = LabelEncoder()
-label_enc_location = LabelEncoder()
-data['product_category_encoded'] = label_enc_category.fit_transform(data['product_category'])
-data['warehouse_location_encoded'] = label_enc_location.fit_transform(data['warehouse_location'])
+df_grouped['month_sin'] = np.sin(2 * np.pi * df_grouped['date'].dt.month / 12)
+df_grouped['month_cos'] = np.cos(2 * np.pi * df_grouped['date'].dt.month / 12)
+df_grouped['year'] = df_grouped['date'].dt.year
+df_grouped['time_idx'] = (df_grouped['date'].dt.year - df_grouped['date'].dt.year.min()) * 12 + (df_grouped['date'].dt.month - df_grouped['date'].dt.month.min())
+df_grouped.fillna(0, inplace=True)
 
-# Normalize sales quantity
-scaler = MinMaxScaler()
-data['product_sales_quantity'] = scaler.fit_transform(data[['product_sales_quantity']])
+# One-hot encode categorical variables
+df_grouped = pd.get_dummies(df_grouped, columns=['product_category', 'warehouse_location'], drop_first=False)
+###################
+
+data = data.drop(columns=['date'])
 
 # Sidebar filters
 st.sidebar.header('Filter Options')
@@ -79,16 +90,52 @@ st.sidebar.header('Predict Sales')
 selected_year = st.sidebar.selectbox('Select Year', sorted(data['year'].unique()))
 selected_month = st.sidebar.selectbox('Select Month', sorted(data['month'].unique()))
 selected_category = st.sidebar.selectbox('Select Product Category', data['product_category'].unique())
-
-# Encode user inputs
-category_encoded = label_enc_category.transform([selected_category])[0]
-location_encoded = label_enc_location.transform([selected_location])[0]
-
-# Prepare input for prediction
-input_features = np.array([[category_encoded, location_encoded, selected_month, selected_year, np.sin(2 * np.pi * selected_month / 12), np.cos(2 * np.pi * selected_month / 12)]]).astype(float)
+selected_location = st.sidebar.selectbox('Select Warehouse Location', data['warehouse_location'].unique())
 
 # Predict sales
 if st.sidebar.button('Predict Sales'):
-    prediction = xgb_model.predict(input_features)
-    predicted_sales = scaler.inverse_transform([[prediction[0]]])[0][0]
-    st.write(f'Predicted Sales Quantity for {selected_month}/{selected_year}: {predicted_sales:.2f}')
+    # Normalize user inputs to match column format
+    formatted_category = f'product_category_{input_category}'
+    formatted_warehouse = f'warehouse_location_{input_warehouse}'
+    
+    # Ensure the mask is a valid boolean series
+    mask = (df_grouped[formatted_category] == 1) & (df_grouped[formatted_warehouse] == 1)
+    
+    if not mask.any():
+        st.error("No data available for the selected category and warehouse.")
+    
+    hist_data = df_grouped[mask].sort_values('date')
+    last_date = hist_data['date'].max()
+    future_dates = pd.date_range(start=last_date + pd.DateOffset(months=1), end=f'{input_year}-{input_month}-01', freq='MS')
+    
+    # Extract initial lags and sales
+    current_sales = hist_data['product_sales_quantity'].iloc[-3:].tolist()
+    predictions = []
+    
+    for date in future_dates:
+    features = {
+        'year': date.year,
+        'month_sin': np.sin(2 * np.pi * date.month / 12),
+        'month_cos': np.cos(2 * np.pi * date.month / 12),
+        'time_idx': (date.year - df_grouped['date'].dt.year.min()) * 12 + (date.month - 1),
+        formatted_category: 1,
+        formatted_warehouse: 1,
+        'lag_1': current_sales[-1] if len(current_sales) >= 1 else 0,
+        'lag_2': current_sales[-2] if len(current_sales) >= 2 else 0,
+        'lag_3': current_sales[-3] if len(current_sales) >= 3 else 0,
+        'rolling_mean_3': np.mean(current_sales[-3:]) if len(current_sales) >= 3 else np.mean(current_sales),
+        'rolling_std_3': np.std(current_sales[-3:]) if len(current_sales) >= 3 else np.std(current_sales) if len(current_sales) > 0 else 0,
+        'rolling_mean_6': np.mean(current_sales[-6:]) if len(current_sales) >= 6 else np.mean(current_sales),
+        'rolling_std_6': np.std(current_sales[-6:]) if len(current_sales) >= 6 else np.std(current_sales) if len(current_sales) > 0 else 0
+    }
+    
+    # Create feature DataFrame ensuring correct column order
+    features_df = pd.DataFrame([features], columns=X.columns).fillna(0)
+    pred = xgb_model.predict(features_df)[0]
+    predictions.append((date, pred))
+    current_sales.append(pred)
+    
+    # Generate forecast DataFrame and plot
+    future_df = pd.DataFrame(predictions, columns=['date', 'predicted_sales'])
+    st.write('Forecared sales for the months:\n')
+    st.write(future_df)
