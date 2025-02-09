@@ -87,16 +87,16 @@ xgb_model.load_model(model_path)
 
 # Sidebar for prediction
 st.sidebar.header('Predict Sales')
-selected_year = st.sidebar.selectbox('Select Year', sorted(data['year'].unique()))
-selected_month = st.sidebar.selectbox('Select Month', sorted(data['month'].unique()))
+selected_year = st.sidebar.selectbox('Select Year', [i for i in range(data['year'].max()+1,data['year'].max()+5)]
+selected_month = st.sidebar.selectbox('Select Month', [i for i in range(1,13)])
 selected_category = st.sidebar.selectbox('Select Product Category', data['product_category'].unique())
 selected_location = st.sidebar.selectbox('Select Warehouse Location', data['warehouse_location'].unique())
 
 # Predict sales
 if st.sidebar.button('Predict Sales'):
     # Normalize user inputs to match column format
-    formatted_category = f'product_category_{input_category}'
-    formatted_warehouse = f'warehouse_location_{input_warehouse}'
+    formatted_category = f'product_category_{selected_category}'
+    formatted_warehouse = f'warehouse_location_{selected_location}'
     
     # Ensure the mask is a valid boolean series
     mask = (df_grouped[formatted_category] == 1) & (df_grouped[formatted_warehouse] == 1)
@@ -106,7 +106,7 @@ if st.sidebar.button('Predict Sales'):
     
     hist_data = df_grouped[mask].sort_values('date')
     last_date = hist_data['date'].max()
-    future_dates = pd.date_range(start=last_date + pd.DateOffset(months=1), end=f'{input_year}-{input_month}-01', freq='MS')
+    future_dates = pd.date_range(start=last_date + pd.DateOffset(months=1), end=f'{selected_year}-{selected_month}-01', freq='MS')
     
     # Extract initial lags and sales
     current_sales = hist_data['product_sales_quantity'].iloc[-3:].tolist()
