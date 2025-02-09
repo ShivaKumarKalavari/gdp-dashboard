@@ -87,7 +87,7 @@ xgb_model.load_model(model_path)
 
 # Sidebar for prediction
 st.sidebar.header('Predict Sales')
-selected_year = st.sidebar.selectbox('Select Year', [i for i in range(data['year'].max()+1,data['year'].max()+5)]
+selected_year = st.sidebar.selectbox('Select Year', [i for i in range(data['year'].max()+1,data['year'].max()+5)])
 selected_month = st.sidebar.selectbox('Select Month', [i for i in range(1,13)])
 selected_category = st.sidebar.selectbox('Select Product Category', data['product_category'].unique())
 selected_location = st.sidebar.selectbox('Select Warehouse Location', data['warehouse_location'].unique())
