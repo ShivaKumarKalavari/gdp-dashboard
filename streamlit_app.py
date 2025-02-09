@@ -113,27 +113,27 @@ if st.sidebar.button('Predict Sales'):
     predictions = []
     
     for date in future_dates:
-    features = {
-        'year': date.year,
-        'month_sin': np.sin(2 * np.pi * date.month / 12),
-        'month_cos': np.cos(2 * np.pi * date.month / 12),
-        'time_idx': (date.year - df_grouped['date'].dt.year.min()) * 12 + (date.month - 1),
-        formatted_category: 1,
-        formatted_warehouse: 1,
-        'lag_1': current_sales[-1] if len(current_sales) >= 1 else 0,
-        'lag_2': current_sales[-2] if len(current_sales) >= 2 else 0,
-        'lag_3': current_sales[-3] if len(current_sales) >= 3 else 0,
-        'rolling_mean_3': np.mean(current_sales[-3:]) if len(current_sales) >= 3 else np.mean(current_sales),
-        'rolling_std_3': np.std(current_sales[-3:]) if len(current_sales) >= 3 else np.std(current_sales) if len(current_sales) > 0 else 0,
-        'rolling_mean_6': np.mean(current_sales[-6:]) if len(current_sales) >= 6 else np.mean(current_sales),
-        'rolling_std_6': np.std(current_sales[-6:]) if len(current_sales) >= 6 else np.std(current_sales) if len(current_sales) > 0 else 0
-    }
-    
-    # Create feature DataFrame ensuring correct column order
-    features_df = pd.DataFrame([features], columns=X.columns).fillna(0)
-    pred = xgb_model.predict(features_df)[0]
-    predictions.append((date, pred))
-    current_sales.append(pred)
+        features = {
+            'year': date.year,
+            'month_sin': np.sin(2 * np.pi * date.month / 12),
+            'month_cos': np.cos(2 * np.pi * date.month / 12),
+            'time_idx': (date.year - df_grouped['date'].dt.year.min()) * 12 + (date.month - 1),
+            formatted_category: 1,
+            formatted_warehouse: 1,
+            'lag_1': current_sales[-1] if len(current_sales) >= 1 else 0,
+            'lag_2': current_sales[-2] if len(current_sales) >= 2 else 0,
+            'lag_3': current_sales[-3] if len(current_sales) >= 3 else 0,
+            'rolling_mean_3': np.mean(current_sales[-3:]) if len(current_sales) >= 3 else np.mean(current_sales),
+            'rolling_std_3': np.std(current_sales[-3:]) if len(current_sales) >= 3 else np.std(current_sales) if len(current_sales) > 0 else 0,
+            'rolling_mean_6': np.mean(current_sales[-6:]) if len(current_sales) >= 6 else np.mean(current_sales),
+            'rolling_std_6': np.std(current_sales[-6:]) if len(current_sales) >= 6 else np.std(current_sales) if len(current_sales) > 0 else 0
+        }
+        
+        # Create feature DataFrame ensuring correct column order
+        features_df = pd.DataFrame([features], columns=X.columns).fillna(0)
+        pred = xgb_model.predict(features_df)[0]
+        predictions.append((date, pred))
+        current_sales.append(pred)
     
     # Generate forecast DataFrame and plot
     future_df = pd.DataFrame(predictions, columns=['date', 'predicted_sales'])
