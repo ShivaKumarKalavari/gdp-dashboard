@@ -80,6 +80,17 @@ location_encoded = label_enc_location.transform([selected_location])[0]
 
 # Prepare input for prediction
 input_features = np.array([[category_encoded, location_encoded, selected_month, selected_year, np.sin(2 * np.pi * selected_month / 12), np.cos(2 * np.pi * selected_month / 12)]]).astype(float)
+# Debugging
+print(f"Model expects {xgb_model.n_features_in_} features, but input has {input_features.shape[1]}")
+
+print("Input shape:", input_features.shape)  # Debugging statement
+print("Expected features:", xgb_model.get_booster().feature_names)
+print("Input features shape:", input_features.shape)
+print("Expected features count:", xgb_model.n_features_in_)
+print("Feature names:", xgb_model.get_booster().feature_names)
+
+
+
 
 # Predict sales
 if st.sidebar.button('Predict Sales'):
