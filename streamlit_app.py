@@ -171,8 +171,14 @@ if st.sidebar.button('Predict Sales'):
         pred = xgb_model.predict(features_df)[0]
         predictions.append((date, pred))
         current_sales.append(pred)
+        
+    st.subheader("Sales Forecast Analytics")
     
     # Generate forecast DataFrame and plot
     future_df = pd.DataFrame(predictions, columns=['date', 'predicted_sales'])
-    st.write('Forecared sales for the months:\n')
+
+    st.write(f"The forecated sales quantity for the category '{selected_category}' in the location '{selected_location}' for the year '{selected_year}' and month '{selected_month}' is predicted around:",future_df[-1]['predicted_sales'])
+    st.write("\n\n")
+    st.write('If you want the 'Forecared sales' upto the selected date :\n')
     st.write(future_df)
+    
