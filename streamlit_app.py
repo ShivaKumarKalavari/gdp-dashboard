@@ -179,6 +179,6 @@ if st.sidebar.button('Predict Sales'):
 
     st.write(f"The forecated sales quantity for the category '{selected_category}' in the location '{selected_location}' for the year '{selected_year}' and month '{selected_month}' is predicted around:",future_df[-1]['predicted_sales'])
     st.write("\n\n")
-    st.write('If you want the 'Forecared sales' upto the selected date :\n')
+    st.write("If you want the 'Forecared sales' upto the selected date :\n")
     st.write(future_df)
     
