@@ -115,29 +115,35 @@ st.pyplot(fig_pie)
 # Sidebar filters for Market Share Analysis
 st.sidebar.header("Market Share Filter Options")
 selected_location_pie = st.sidebar.selectbox("Select Warehouse Location for Market Share", data['warehouse_location'].unique(), key="market_share_location")
-selected_year_range_pie = st.sidebar.slider("Select Year Range for Market Share", int(data['year'].min()), int(data['year'].max()), (int(data['year'].min()), int(data['year'].max())), key="market_share_year")
+selected_year_range_pie = st.sidebar.slider("Select Year Range for Market Share", int(data['year'].min()), int(data['year'].max()), 
+                                            (int(data['year'].min()), int(data['year'].max())), key="market_share_year")
 selected_month_range_pie = st.sidebar.slider("Select Month Range for Market Share", 1, 12, (1, 12), key="market_share_month")
 
 # Filter the dataset based on selected location and time range
-data_filtered_pie = data[(data['warehouse_location'] == selected_location_pie) &
-                         (data['year'] >= selected_year_range_pie[0]) & (data['year'] <= selected_year_range_pie[1]) &
-                         (data['month'] >= selected_month_range_pie[0]) & (data['month'] <= selected_month_range_pie[1])]
+data_filtered_pie = data[
+    (data['warehouse_location'] == selected_location_pie) &
+    (data['year'] >= selected_year_range_pie[0]) & (data['year'] <= selected_year_range_pie[1]) &
+    (data['month'] >= selected_month_range_pie[0]) & (data['month'] <= selected_month_range_pie[1])
+]
 
-# Generate Market Share Pie Chart
-st.subheader(f"Market Share Analysis for {selected_location_pie} (Year: {selected_year_range_pie[0]} - {selected_year_range_pie[1]}, Month: {selected_month_range_pie[0]} - {selected_month_range_pie[1]})")
+# Update subheader dynamically
+st.subheader(f"Market Share Analysis for {selected_location_pie} ({selected_year_range_pie[0]} - {selected_year_range_pie[1]}, Months {selected_month_range_pie[0]} - {selected_month_range_pie[1]})")
 
+# Generate Market Share Pie Chart dynamically
 if not data_filtered_pie.empty:
     category_share = data_filtered_pie.groupby("product_category")['product_sales_quantity'].sum()
-    
+
+    # Ensure there is valid data to plot
     if category_share.sum() > 0:
         fig_pie, ax_pie = plt.subplots()
         ax_pie.pie(category_share, labels=category_share.index, autopct='%1.1f%%', startangle=90, colors=sns.color_palette("pastel"))
-        ax_pie.axis("equal")
+        ax_pie.axis("equal")  # Ensures pie chart is circular
         st.pyplot(fig_pie)
     else:
-        st.warning("No sales data available for the selected filters.")
+        st.warning("No sales data available for the selected filters. Try a different time range or location.")
 else:
-    st.warning("No data available for the selected location and time range.")
+    st.warning("No data available for the selected warehouse and time range.")
+
 
 
 
