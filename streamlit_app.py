@@ -104,14 +104,7 @@ sns.lineplot(x='month', y='product_sales_quantity', hue='year', data=data_filter
 st.pyplot(fig)
 
 # Pie Chart for Market Share
-"""
-st.subheader("Market Share Analysis")
-category_share = data.groupby("product_category")['product_sales_quantity'].sum()
-fig_pie, ax_pie = plt.subplots()
-ax_pie.pie(category_share, labels=category_share.index, autopct='%1.1f%%', startangle=90, colors=sns.color_palette("pastel"))
-ax_pie.axis("equal")
-st.pyplot(fig_pie)
-"""
+
 # Sidebar filters for Market Share Analysis
 st.sidebar.header("Market Share Filter Options")
 selected_location_pie = st.sidebar.selectbox("Select Warehouse Location for Market Share", data['warehouse_location'].unique(), key="market_share_location")
