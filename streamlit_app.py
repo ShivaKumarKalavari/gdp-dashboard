@@ -23,7 +23,7 @@ def login():
         if username in users and users[username] == password:
             st.session_state.logged_in = True
             st.success("Login successful! Redirecting...")
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("Invalid credentials. Try again.")
 
