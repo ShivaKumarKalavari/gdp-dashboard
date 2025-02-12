@@ -177,7 +177,7 @@ if st.sidebar.button('Predict Sales'):
     # Generate forecast DataFrame and plot
     future_df = pd.DataFrame(predictions, columns=['date', 'predicted_sales'])
 
-    st.write(f"The forecated sales quantity for the category '{selected_category}' in the location '{selected_location}' for the year '{selected_year}' and month '{selected_month}' is predicted around:",future_df[-1]['predicted_sales'])
+    st.write(f"The forecated sales quantity for the category '{selected_category}' in the location '{selected_location}' for the year '{selected_year}' and month '{selected_month}' is predicted around:",future_df.tail(1)['predicted_sales'])
     st.write("\n\n")
     st.write("If you want the 'Forecared sales' upto the selected date :\n")
     st.write(future_df)
