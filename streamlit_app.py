@@ -9,6 +9,29 @@ from sklearn.preprocessing import MinMaxScaler, LabelEncoder
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 
+# Login System
+users = {"admin": "password123", "user": "pass456"}
+
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+
+def login():
+    st.title("Login to Sales Forecast Dashboard")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    if st.button("Login"):
+        if username in users and users[username] == password:
+            st.session_state.logged_in = True
+            st.success("Login successful! Redirecting...")
+            st.experimental_rerun()
+        else:
+            st.error("Invalid credentials. Try again.")
+
+if not st.session_state.logged_in:
+    login()
+    st.stop()
+
+
 # Download the sales data from GitHub
 url1 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/raw/main/data/sales_data_new.csv'
 response = requests.get(url1)
@@ -54,6 +77,8 @@ X = df_grouped.drop(columns=['date', 'product_sales_quantity'])
 y = df_grouped['product_sales_quantity']
 ###################
 
+# Creating the analytics dashboard
+st.title("Sales Analytics Dashboard")
 data = data.drop(columns=['date'])
 
 # Sidebar filters
@@ -78,6 +103,13 @@ fig, ax = plt.subplots()
 sns.lineplot(x='month', y='product_sales_quantity', hue='year', data=data_filtered, ax=ax)
 st.pyplot(fig)
 
+# Pie Chart for Market Share
+st.subheader("Market Share Analysis")
+category_share = data.groupby("product_category")['product_sales_quantity'].sum()
+fig_pie, ax_pie = plt.subplots()
+ax_pie.pie(category_share, labels=category_share.index, autopct='%1.1f%%', startangle=90, colors=sns.color_palette("pastel"))
+ax_pie.axis("equal")
+st.pyplot(fig_pie)
 
 # Download the model from GitHub
 url2 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/raw/main/xgboost_model.json'
