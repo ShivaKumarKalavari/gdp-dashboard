@@ -94,11 +94,11 @@ data_filtered = data[(data['product_name'] == selected_product) &
                      (data['year'] >= selected_year_range[0]) & (data['year'] <= selected_year_range[1]) &
                      (data['month'] >= selected_month_range[0]) & (data['month'] <= selected_month_range[1])]
 
-st.write('Filtered Sales Data')
+st.subheader('Filtered Sales Data')
 st.write(data_filtered)
 
 # Sales Chart
-st.write('Sales Chart')
+st.subheader('Sales Chart')
 fig, ax = plt.subplots()
 sns.lineplot(x='month', y='product_sales_quantity', hue='year', data=data_filtered, ax=ax)
 st.pyplot(fig)
