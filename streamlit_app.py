@@ -47,7 +47,7 @@ col1, col2 = st.columns([9, 1])
 with col2:
     if st.button("👤 " + st.session_state.username):
         st.session_state.logged_in = False
-        st.session_state.username = ""
+        st.session_state.username = username
         st.rerun()
 
 
