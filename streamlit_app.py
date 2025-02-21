@@ -31,6 +31,25 @@ if not st.session_state.logged_in:
     login()
     st.stop()
 
+# Add user profile icon with logout option
+st.markdown("""
+    <style>
+    .profile-icon {
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        cursor: pointer;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+col1, col2 = st.columns([9, 1])
+with col2:
+    if st.button("👤 " + st.session_state.username):
+        st.session_state.logged_in = False
+        st.session_state.username = ""
+        st.rerun()
+
 
 # Download the sales data from GitHub
 url1 = 'https://github.com/ShivaKumarKalavari/gdp-dashboard/raw/main/data/sales_data_new.csv'
