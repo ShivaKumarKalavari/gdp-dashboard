@@ -22,6 +22,7 @@ def login():
     if st.button("Login"):
         if username in users and users[username] == password:
             st.session_state.logged_in = True
+            st.session_state.username = username
             st.success("Login successful! Redirecting...")
             st.rerun()
         else:
@@ -47,7 +48,7 @@ col1, col2 = st.columns([9, 1])
 with col2:
     if st.button("👤 " + st.session_state.username):
         st.session_state.logged_in = False
-        st.session_state.username = username
+        st.session_state.username = ""
         st.rerun()
 
 
